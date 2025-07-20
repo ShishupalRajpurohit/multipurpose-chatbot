@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Chatbot</h2>
+
+    <div class="chat-box">
+        {% for user, bot in chat_history %}
+            <div class="chat-entry">
+                <strong class="user">You:</strong> {{ user }}<br>
+                <strong class="bot">Bot:</strong> {{ bot }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <form method="POST">
+        <input type="text" name="user_input" required style="width: 300px; padding: 5px;" autofocus>
+        <button type="submit" class="chat-button">Send</button>
+    </form>
+
+    <form method="GET" action="{{ url_for('main.home') }}" style="margin-top: 10px;">
+        <button class="chat-button">Back to Home</button>
+    </form>
+{% endblock %}
