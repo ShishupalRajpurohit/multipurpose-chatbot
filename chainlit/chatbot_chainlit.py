@@ -12,8 +12,8 @@ from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 
 # from data.sqldb_database import SessionLocal
-from table.sqldb_models import ChatHistory
-from table.sqldb_database import SessionLocal
+from database.models import ChatHistory
+from database.database import SessionLocal
 
 # Load environment variables
 load_dotenv()
