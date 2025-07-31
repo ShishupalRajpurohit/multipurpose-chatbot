@@ -1,17 +1,17 @@
 import sys
 import os
+import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
-import os
-import time
 from dotenv import load_dotenv
 from chainlit import on_message, Message
-from langchain_groq import ChatGroq
-from langchain_core.prompts import ChatPromptTemplate
 
-# from data.sqldb_database import SessionLocal
+from langchain_groq import ChatGroq
+from langchain.chains import RetrievalQA
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
+
 from database.models import ChatHistory
 from database.database import SessionLocal
 
@@ -25,12 +25,25 @@ llm = ChatGroq(
     model="meta-llama/llama-4-maverick-17b-128e-instruct"
 )
 
-# Prompt Template
-prompt = ChatPromptTemplate.from_template(
-    "You are a helpful assistant. Answer the following question:\n\n{question}"
+# Embedding & Retriever
+embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+# Load FAISS vectorstore (make sure it's already created)
+retriever = FAISS.load_local(
+    "vectorstore/db_faiss",  
+    embeddings=embedding_model,
+    allow_dangerous_deserialization=True
+).as_retriever()
+
+
+# RAG Chain
+rag_chain = RetrievalQA.from_chain_type(
+    llm=llm,
+    retriever=retriever,
+    return_source_documents=True
 )
 
-# Function to save to database
+# Save chat to DB
 def save_chat(session_id, user_query, bot_response, model_used, response_time):
     db = SessionLocal()
     chat_entry = ChatHistory(
@@ -47,18 +60,19 @@ def save_chat(session_id, user_query, bot_response, model_used, response_time):
 # Chainlit Message Handler
 @on_message
 async def handle_message(message):
-    chain = prompt | llm
-
     start_time = time.time()
-    response = chain.invoke({"question": message.content})
+    
+    response = rag_chain.invoke({"query": message.content})
     response_time = round(time.time() - start_time, 3)
 
-    await Message(content=response.content).send()
+    # Send the response to the user
+    await Message(content=response["result"]).send()
 
+    # Save to database
     save_chat(
         session_id=str(message.session_id),
         user_query=message.content,
-        bot_response=response.content,
+        bot_response=response["result"],
         model_used="meta-llama/llama-4-maverick-17b-128e-instruct",
         response_time=response_time
     )
