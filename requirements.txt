@@ -1,0 +1,38 @@
+flask
+python-dotenv
+chainlit
+langchain
+langchain-core
+langchain-groq
+sqlalchemy
+psycopg2
+langchain-huggingface
+pypdf
+
+# Authentication
+flask-login
+flask-bcrypt
+pyjwt
+
+# Vector DB
+qdrant-client
+
+# Document Processing
+python-docx
+openpyxl
+pandas
+pdfplumber
+
+# Web Search
+tavily-python
+
+# Embeddings
+sentence-transformers
+
+# Database Migrations
+alembic
+
+# API & Utilities
+flask-cors
+requests
+cryptography
