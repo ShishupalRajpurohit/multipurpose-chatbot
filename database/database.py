@@ -87,7 +87,7 @@ def test_connection():
         print(f"❌ Database connection failed: {e}")
         return False
 
-
+ 
 # Initialize database on import (optional - comment out if not needed)
 if __name__ == "__main__":
     print("Testing database connection...")
